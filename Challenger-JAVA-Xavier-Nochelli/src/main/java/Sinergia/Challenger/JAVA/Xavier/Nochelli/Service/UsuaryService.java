@@ -4,6 +4,7 @@ import Sinergia.Challenger.JAVA.Xavier.Nochelli.DTO.CreateUsuary;
 import Sinergia.Challenger.JAVA.Xavier.Nochelli.DTO.UsuaryDTO;
 import Sinergia.Challenger.JAVA.Xavier.Nochelli.Models.Usuary;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -12,6 +13,8 @@ public interface UsuaryService {
     Usuary getUserByEmail(String email);
 
     void changePassword(String email, String currentPassword, String newPassword);
+
+    ResponseEntity<String> forgotPassword (String email);
 
     Usuary findByEmail (String Email);
 

@@ -6,12 +6,15 @@ import Sinergia.Challenger.JAVA.Xavier.Nochelli.Models.Usuary;
 import Sinergia.Challenger.JAVA.Xavier.Nochelli.Repository.UsuaryRepository;
 import Sinergia.Challenger.JAVA.Xavier.Nochelli.Service.EmailService;
 import Sinergia.Challenger.JAVA.Xavier.Nochelli.Service.UsuaryService;
+import Sinergia.Challenger.JAVA.Xavier.Nochelli.Utils.GenerateRandomPassword;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +27,8 @@ public class UsuaryServiceImplement implements UsuaryService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+
 
     @Autowired
     private EmailService emailService; // Suponiendo que tienes un servicio para enviar correos electrónicos
@@ -94,7 +99,7 @@ public class UsuaryServiceImplement implements UsuaryService {
         usuaryRepository.save(usuary);
     }
 
-    public static String passwordValidator(String password) throws IllegalArgumentException{
+    public String passwordValidator(String password) throws IllegalArgumentException{
 
         String pass = password;
 
@@ -102,6 +107,27 @@ public class UsuaryServiceImplement implements UsuaryService {
             throw new IllegalArgumentException("password invalid");
         }
         return pass;
+    }
+
+    @Override
+    public ResponseEntity<String> forgotPassword(String email) {
+        try {
+            // Generar una nueva contraseña aleatoria
+            String newPassword = GenerateRandomPassword.generateNewPassword();
+
+            // Cambiar la contraseña del usuario
+            changePassword(email, null, newPassword);
+
+            // Enviar la nueva contraseña por correo electrónico
+            String subject = "Recuperación de Contraseña";
+            String text = "Tu nueva contraseña es: " + newPassword;
+            emailService.sendSimpleEmail(email, subject, text);
+
+            return ResponseEntity.ok("Se ha enviado una nueva contraseña al correo electrónico proporcionado.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al procesar la solicitud: " + e.getMessage());
+        }
     }
 
 }

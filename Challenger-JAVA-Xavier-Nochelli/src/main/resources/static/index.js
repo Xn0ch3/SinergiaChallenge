@@ -45,11 +45,7 @@ const app = Vue.createApp({
         },
 
         handleForgotPassword() {
-            axios.post('/usuary/forgot-password', null, {
-                params: {
-                    email: this.email
-                }
-            })
+            axios.post("/usuary/forgot-password?email=" + this.email)
                 .then(response => {
                     Swal.fire({
                         icon: 'success',

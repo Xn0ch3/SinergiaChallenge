@@ -5,6 +5,7 @@ import Sinergia.Challenger.JAVA.Xavier.Nochelli.DTO.UsuaryDTO;
 import Sinergia.Challenger.JAVA.Xavier.Nochelli.Models.Usuary;
 import Sinergia.Challenger.JAVA.Xavier.Nochelli.Service.EmailService;
 import Sinergia.Challenger.JAVA.Xavier.Nochelli.Service.UsuaryService;
+import Sinergia.Challenger.JAVA.Xavier.Nochelli.Utils.GenerateRandomPassword;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,29 +48,7 @@ public class UsuaryController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestParam("email") String email) {
-        try {
-            // Generar una nueva contraseña aleatoria
-            String newPassword = generateRandomPassword();
-
-            // Cambiar la contraseña del usuario
-            usuaryService.changePassword(email, null, newPassword);
-
-            // Enviar la nueva contraseña por correo electrónico
-            String subject = "Recuperación de Contraseña";
-            String text = "Tu nueva contraseña es: " + newPassword;
-            emailService.sendSimpleEmail(email, subject, text);
-
-            return ResponseEntity.ok("Se ha enviado una nueva contraseña al correo electrónico proporcionado.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al procesar la solicitud: " + e.getMessage());
-        }
-    }
-
-    // Método para generar una nueva contraseña aleatoria
-    private String generateRandomPassword() {
-        // Implementa la lógica para generar una contraseña aleatoria
-        return "NuevaContraseña123"; // Debes implementar una lógica adecuada
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+        return usuaryService.forgotPassword(email);
     }
 }
