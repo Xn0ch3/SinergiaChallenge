@@ -41,12 +41,20 @@ public class UsuaryServiceImplement implements UsuaryService {
 
     @Override
     public void changePassword(String email, String currentPassword, String newPassword) {
-        Usuary usuary =getUserByEmail(email);
+        Usuary usuary = getUserByEmail(email);
+        if (usuary != null) {
+            // Codificar y establecer la nueva contraseña
 
-        // Codificar y establecer la nueva contraseña
-        String encodedPassword = passwordEncoder.encode(newPassword);
-        usuary.setPassword(encodedPassword);
-        usuaryRepository.save(usuary);
+            usuary.setPassword(passwordEncoder.encode(newPassword));
+
+            try {
+                usuaryRepository.save(usuary);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al guardar la nueva contraseña: " + e.getMessage());
+            }
+        } else {
+            throw new RuntimeException("Usuario no encontrado.");
+        }
     }
 
     @Override
@@ -103,7 +111,7 @@ public class UsuaryServiceImplement implements UsuaryService {
 
         String pass = password;
 
-        if(!pass.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%&*])[A-Z a-z\\d!@#$%&*]{8,}$")){
+        if(!pass.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@$%&*])[A-Z a-z\\d!@$%&*]{8,}$")){
             throw new IllegalArgumentException("password invalid");
         }
         return pass;
@@ -112,16 +120,38 @@ public class UsuaryServiceImplement implements UsuaryService {
     @Override
     public ResponseEntity<String> forgotPassword(String email) {
         try {
+            // Se busca el usuario en el repositorio
+            Usuary usuary = getUserByEmail(email);
+            if (usuary == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Usuario no encontrado con el correo proporcionado.");
+            }
+
             // Generar una nueva contraseña aleatoria
             String newPassword = GenerateRandomPassword.generateNewPassword();
 
             // Cambiar la contraseña del usuario
-            changePassword(email, null, newPassword);
+            try {
+                changePassword(email, usuary.getPassword(), newPassword);
+
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Error al cambiar la contraseña: " + e.getMessage());
+            }
+
+            System.out.println("La Contraseña nueva es: " + newPassword);
+
+            System.out.println("La contraseña de usuario: " + usuary.getPassword());
 
             // Enviar la nueva contraseña por correo electrónico
-            String subject = "Recuperación de Contraseña";
-            String text = "Tu nueva contraseña es: " + newPassword;
-            emailService.sendSimpleEmail(email, subject, text);
+            try {
+                String subject = "Recuperación de Contraseña";
+                String text = "Tu nueva contraseña es: " + newPassword;
+                emailService.sendSimpleEmail(email, subject, text);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Error al enviar el correo electrónico: " + e.getMessage());
+            }
 
             return ResponseEntity.ok("Se ha enviado una nueva contraseña al correo electrónico proporcionado.");
         } catch (Exception e) {

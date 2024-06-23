@@ -22,7 +22,7 @@ public class ChallengerJavaXavierNochelliApplication {
 	@Bean
 	public CommandLineRunner initData(UsuaryRepository usuaryRepository) {
 		return args -> {
-			Usuary usuary = new Usuary("Xavier","Nochelli","Xavier@gmail.com", passwordEncoder.encode("Xavier10$"), RoleType.USUARY );
+			Usuary usuary = new Usuary("Xavier","Nochelli","nochellixavier@gmail.com", passwordEncoder.encode("Xavier10$"), RoleType.USUARY );
 			usuaryRepository.save(usuary);
 
 		};
